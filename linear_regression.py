@@ -55,4 +55,30 @@ def plot_loss_curve(loss_history):
     ax.legend()
     ax.grid(True, alpha=0.3)
     plt.tight_layout()
-    return fig            
+    return fig       
+
+def plot_regression_fit(X, y, model):
+    fig, ax = plt.subplots(figsize=(10, 6))
+    
+    X_line = np.linspace(X.min(), X.max(), 100)
+    epochs_to_show = [0, 25, 50, 75, model.epochs - 1]
+    styles = ['--', ':', ':', ':', '-']
+    colors = ['#FF6B6B', '#888888', '#888888', '#FFA500', '#E63946']
+    labels = ['Initial Line (Epoch 0)', 'Epoch 25', 'Epoch 50', 'Epoch 75', f'Final Fit (Epoch {model.epochs})']
+
+    ax.scatter(X, y, alpha=0.6, color='#4A90D9', label=f'Data points (y = 3x + 5 + ε)')
+
+    for i, epoch in enumerate(epochs_to_show):
+        w = model.w_history[epoch]
+        b = model.b_history[epoch]
+        y_line = w * X_line + b
+        ax.plot(X_line, y_line, linestyle=styles[i], 
+                color=colors[i], linewidth=2, label=labels[i])
+
+    ax.set_xlabel('Feature (X)', fontsize=12)
+    ax.set_ylabel('Target (y)', fontsize=12)
+    ax.set_title('Linear Regression Fit Progression', fontsize=14, fontweight='bold')
+    ax.legend()
+    ax.grid(True, alpha=0.3)
+    plt.tight_layout()
+    return fig     

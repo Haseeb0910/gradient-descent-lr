@@ -116,3 +116,38 @@ def plot_contour(X, y, model):
     ax.legend(loc='upper right')
     plt.tight_layout()
     return fig
+
+def plot_3d_surface(X, y, model):
+    w_range = np.linspace(model.w_history[-1] - 4, model.w_history[-1] + 4, 50)
+    b_range = np.linspace(model.b_history[-1] - 4, model.b_history[-1] + 4, 50)
+    W, B = np.meshgrid(w_range, b_range)
+
+    Z = np.array([
+        [(1 / (2 * len(y))) * np.sum((w * X + b - y) ** 2)
+         for w in w_range]
+        for b in b_range
+    ])
+
+    loss_at_path = np.array(model.loss_history)
+
+    fig = plt.figure(figsize=(12, 8))
+    ax = fig.add_subplot(111, projection='3d')
+
+    surf = ax.plot_surface(W, B, Z, cmap='coolwarm', alpha=0.7, edgecolor='none')
+    fig.colorbar(surf, ax=ax, shrink=0.5, label='Cost Magnitude')
+
+    ax.plot(model.w_history, model.b_history, loss_at_path,
+            color='#FF4500', linewidth=2, zorder=5, label='GD Trajectory')
+    ax.scatter(model.w_history[0], model.b_history[0], loss_at_path[0],
+               color='yellow', marker='*', s=200, zorder=6, label='Start')
+    ax.scatter(model.w_history[-1], model.b_history[-1], loss_at_path[-1],
+               color='#00FF00', marker='o', s=150, zorder=6, label='Minimum (Optimum)')
+
+    ax.set_xlabel('Weight (w)', fontsize=10)
+    ax.set_ylabel('Bias (b)', fontsize=10)
+    ax.set_zlabel('Cost J(w, b)', fontsize=10)
+    ax.set_title('3D Parameter Cost Surface & Gradient Descent Path',
+                 fontsize=13, fontweight='bold')
+    ax.legend()
+    plt.tight_layout()
+    return fig

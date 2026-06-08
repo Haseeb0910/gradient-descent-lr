@@ -82,3 +82,37 @@ def plot_regression_fit(X, y, model):
     ax.grid(True, alpha=0.3)
     plt.tight_layout()
     return fig     
+
+def plot_contour(X, y, model):
+    w_range = np.linspace(model.w_history[-1] - 4, model.w_history[-1] + 4, 100)
+    b_range = np.linspace(model.b_history[-1] - 4, model.b_history[-1] + 4, 100)
+    W, B = np.meshgrid(w_range, b_range)
+
+    Z = np.array([
+        [(1 / (2 * len(y))) * np.sum((w * X + b - y) ** 2) 
+         for w in w_range] 
+        for b in b_range
+    ])
+
+    fig, ax = plt.subplots(figsize=(10, 8))
+    
+    contour_filled = ax.contourf(W, B, Z, levels=30, cmap='plasma', alpha=0.6)
+    contour_lines = ax.contour(W, B, Z, levels=30, colors='white', alpha=0.3, linewidths=0.5)
+    plt.colorbar(contour_filled, ax=ax, label='Cost J(w,b)')
+
+    ax.plot(model.w_history, model.b_history, 
+            color='#00FFFF', linewidth=2, zorder=5, label='GD Optimization Path')
+    
+    ax.scatter(model.w_history[0], model.b_history[0], 
+               color='yellow', marker='*', s=200, zorder=6, label=f'Start ({model.w_history[0]:.1f}, {model.b_history[0]:.1f})')
+    ax.scatter(model.w_history[-1], model.b_history[-1], 
+               color='#00FF00', marker='o', s=150, zorder=6, label=f'Fit ({model.w_history[-1]:.2f}, {model.b_history[-1]:.2f})')
+    ax.scatter(3.0, 5.0, 
+               color='#FF69B4', marker='D', s=150, zorder=6, label='True Optimum (3.0, 5.0)')
+
+    ax.set_xlabel('Weight (w)', fontsize=12)
+    ax.set_ylabel('Bias (b)', fontsize=12)
+    ax.set_title('2D Cost Contours with Optimization Path', fontsize=14, fontweight='bold')
+    ax.legend(loc='upper right')
+    plt.tight_layout()
+    return fig

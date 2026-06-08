@@ -1,4 +1,6 @@
 import numpy as np
+import matplotlib.pyplot as plt
+import numpy as np
 
 class LinearRegressionScratch:
     def __init__(self, learning_rate=0.05, epochs=100):
@@ -35,3 +37,22 @@ class LinearRegressionScratch:
             dw, db = self.compute_gradients(X, y)
             self.w -= self.learning_rate * dw
             self.b -= self.learning_rate * db
+
+
+def generate_data(n_samples=100, w_true=3.0, b_true=5.0, noise=1.0, seed=42):
+    np.random.seed(seed)
+    X = np.random.randn(n_samples)
+    y = w_true * X + b_true + np.random.randn(n_samples) * noise
+    return X, y
+
+def plot_loss_curve(loss_history):
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.plot(loss_history, color='#E07B54', linewidth=2, label='Cost J(w, b)')
+    ax.set_xlabel('Epoch / Iteration', fontsize=12)
+    ax.set_ylabel('Cost J(w, b) (MSE / 2)', fontsize=12)
+    ax.set_title('Cost Function Convergence Curve', fontsize=14, fontweight='bold')
+    ax.set_yscale('log')
+    ax.legend()
+    ax.grid(True, alpha=0.3)
+    plt.tight_layout()
+    return fig            

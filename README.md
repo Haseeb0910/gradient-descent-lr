@@ -1,4 +1,4 @@
-# 📈 Linear Regression & Gradient Descent From Scratch
+# 📈 Linear Regression & Gradient Descent
 
 An interactive visual tool that shows exactly how a machine learning model learns — 
 built from scratch using only Python and NumPy, with a Streamlit UI.

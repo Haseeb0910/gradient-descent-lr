@@ -1,13 +1,29 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import numpy as np
+
+BG_COLOR = '#0E1117'
+AX_COLOR = '#1E1E2E'
+TEXT_COLOR = 'white'
+GRID_COLOR = '#333333'
+
+def apply_dark_theme(fig, ax):
+    fig.patch.set_facecolor(BG_COLOR)
+    ax.set_facecolor(AX_COLOR)
+    ax.tick_params(colors=TEXT_COLOR)
+    ax.xaxis.label.set_color(TEXT_COLOR)
+    ax.yaxis.label.set_color(TEXT_COLOR)
+    ax.title.set_color(TEXT_COLOR)
+    ax.legend(facecolor=AX_COLOR, labelcolor=TEXT_COLOR, edgecolor='#444444')
+    ax.grid(True, alpha=0.2, color=GRID_COLOR)
+    for spine in ax.spines.values():
+        spine.set_edgecolor('#444444')
 
 class LinearRegressionScratch:
     def __init__(self, learning_rate=0.05, epochs=100):
         self.learning_rate = learning_rate
         self.epochs = epochs
-        self.w = 0.0  # weight
-        self.b = 0.0  # bias
+        self.w = 0.0
+        self.b = 0.0
         self.w_history = []
         self.b_history = []
         self.loss_history = []
@@ -45,6 +61,7 @@ def generate_data(n_samples=100, w_true=3.0, b_true=5.0, noise=1.0, seed=42):
     y = w_true * X + b_true + np.random.randn(n_samples) * noise
     return X, y
 
+
 def plot_loss_curve(loss_history):
     fig, ax = plt.subplots(figsize=(10, 6))
     ax.plot(loss_history, color='#E07B54', linewidth=2, label='Cost J(w, b)')
@@ -52,36 +69,36 @@ def plot_loss_curve(loss_history):
     ax.set_ylabel('Cost J(w, b) (MSE / 2)', fontsize=12)
     ax.set_title('Cost Function Convergence Curve', fontsize=14, fontweight='bold')
     ax.set_yscale('log')
-    ax.legend()
-    ax.grid(True, alpha=0.3)
+    apply_dark_theme(fig, ax)
     plt.tight_layout()
-    return fig       
+    return fig
+
 
 def plot_regression_fit(X, y, model):
     fig, ax = plt.subplots(figsize=(10, 6))
-    
+
     X_line = np.linspace(X.min(), X.max(), 100)
     epochs_to_show = [0, 25, 50, 75, model.epochs - 1]
     styles = ['--', ':', ':', ':', '-']
     colors = ['#FF6B6B', '#888888', '#888888', '#FFA500', '#E63946']
     labels = ['Initial Line (Epoch 0)', 'Epoch 25', 'Epoch 50', 'Epoch 75', f'Final Fit (Epoch {model.epochs})']
 
-    ax.scatter(X, y, alpha=0.6, color='#4A90D9', label=f'Data points (y = 3x + 5 + ε)')
+    ax.scatter(X, y, alpha=0.6, color='#4A90D9', label='Data points (y = 3x + 5 + ε)')
 
     for i, epoch in enumerate(epochs_to_show):
         w = model.w_history[epoch]
         b = model.b_history[epoch]
         y_line = w * X_line + b
-        ax.plot(X_line, y_line, linestyle=styles[i], 
+        ax.plot(X_line, y_line, linestyle=styles[i],
                 color=colors[i], linewidth=2, label=labels[i])
 
     ax.set_xlabel('Feature (X)', fontsize=12)
     ax.set_ylabel('Target (y)', fontsize=12)
     ax.set_title('Linear Regression Fit Progression', fontsize=14, fontweight='bold')
-    ax.legend()
-    ax.grid(True, alpha=0.3)
+    apply_dark_theme(fig, ax)
     plt.tight_layout()
-    return fig     
+    return fig
+
 
 def plot_contour(X, y, model):
     w_range = np.linspace(model.w_history[-1] - 4, model.w_history[-1] + 4, 100)
@@ -89,33 +106,39 @@ def plot_contour(X, y, model):
     W, B = np.meshgrid(w_range, b_range)
 
     Z = np.array([
-        [(1 / (2 * len(y))) * np.sum((w * X + b - y) ** 2) 
-         for w in w_range] 
+        [(1 / (2 * len(y))) * np.sum((w * X + b - y) ** 2)
+         for w in w_range]
         for b in b_range
     ])
 
     fig, ax = plt.subplots(figsize=(10, 8))
-    
-    contour_filled = ax.contourf(W, B, Z, levels=30, cmap='plasma', alpha=0.6)
-    contour_lines = ax.contour(W, B, Z, levels=30, colors='white', alpha=0.3, linewidths=0.5)
-    plt.colorbar(contour_filled, ax=ax, label='Cost J(w,b)')
 
-    ax.plot(model.w_history, model.b_history, 
+    contour_filled = ax.contourf(W, B, Z, levels=30, cmap='plasma', alpha=0.8)
+    ax.contour(W, B, Z, levels=30, colors='white', alpha=0.2, linewidths=0.5)
+    cbar = plt.colorbar(contour_filled, ax=ax, label='Cost J(w,b)')
+    cbar.ax.yaxis.set_tick_params(color=TEXT_COLOR)
+    cbar.ax.yaxis.label.set_color(TEXT_COLOR)
+    plt.setp(cbar.ax.yaxis.get_ticklabels(), color=TEXT_COLOR)
+
+    ax.plot(model.w_history, model.b_history,
             color='#00FFFF', linewidth=2, zorder=5, label='GD Optimization Path')
-    
-    ax.scatter(model.w_history[0], model.b_history[0], 
-               color='yellow', marker='*', s=200, zorder=6, label=f'Start ({model.w_history[0]:.1f}, {model.b_history[0]:.1f})')
-    ax.scatter(model.w_history[-1], model.b_history[-1], 
-               color='#00FF00', marker='o', s=150, zorder=6, label=f'Fit ({model.w_history[-1]:.2f}, {model.b_history[-1]:.2f})')
-    ax.scatter(3.0, 5.0, 
-               color='#FF69B4', marker='D', s=150, zorder=6, label='True Optimum (3.0, 5.0)')
+    ax.scatter(model.w_history[0], model.b_history[0],
+               color='yellow', marker='*', s=200, zorder=6,
+               label=f'Start ({model.w_history[0]:.1f}, {model.b_history[0]:.1f})')
+    ax.scatter(model.w_history[-1], model.b_history[-1],
+               color='#00FF00', marker='o', s=150, zorder=6,
+               label=f'Fit ({model.w_history[-1]:.2f}, {model.b_history[-1]:.2f})')
+    ax.scatter(3.0, 5.0,
+               color='#FF69B4', marker='D', s=150, zorder=6,
+               label='True Optimum (3.0, 5.0)')
 
     ax.set_xlabel('Weight (w)', fontsize=12)
     ax.set_ylabel('Bias (b)', fontsize=12)
     ax.set_title('2D Cost Contours with Optimization Path', fontsize=14, fontweight='bold')
-    ax.legend(loc='upper right')
+    apply_dark_theme(fig, ax)
     plt.tight_layout()
     return fig
+
 
 def plot_3d_surface(X, y, model):
     w_range = np.linspace(model.w_history[-1] - 4, model.w_history[-1] + 4, 50)
@@ -133,8 +156,24 @@ def plot_3d_surface(X, y, model):
     fig = plt.figure(figsize=(12, 8))
     ax = fig.add_subplot(111, projection='3d')
 
+    fig.patch.set_facecolor(BG_COLOR)
+    ax.set_facecolor(AX_COLOR)
+    ax.tick_params(colors=TEXT_COLOR)
+    ax.xaxis.label.set_color(TEXT_COLOR)
+    ax.yaxis.label.set_color(TEXT_COLOR)
+    ax.zaxis.label.set_color(TEXT_COLOR)
+    ax.title.set_color(TEXT_COLOR)
+    ax.xaxis.pane.fill = False
+    ax.yaxis.pane.fill = False
+    ax.zaxis.pane.fill = False
+    ax.xaxis.pane.set_edgecolor('#444444')
+    ax.yaxis.pane.set_edgecolor('#444444')
+    ax.zaxis.pane.set_edgecolor('#444444')
+
     surf = ax.plot_surface(W, B, Z, cmap='coolwarm', alpha=0.7, edgecolor='none')
-    fig.colorbar(surf, ax=ax, shrink=0.5, label='Cost Magnitude')
+    cbar = fig.colorbar(surf, ax=ax, shrink=0.5, label='Cost Magnitude')
+    cbar.ax.yaxis.label.set_color(TEXT_COLOR)
+    plt.setp(cbar.ax.yaxis.get_ticklabels(), color=TEXT_COLOR)
 
     ax.plot(model.w_history, model.b_history, loss_at_path,
             color='#FF4500', linewidth=2, zorder=5, label='GD Trajectory')
@@ -148,6 +187,6 @@ def plot_3d_surface(X, y, model):
     ax.set_zlabel('Cost J(w, b)', fontsize=10)
     ax.set_title('3D Parameter Cost Surface & Gradient Descent Path',
                  fontsize=13, fontweight='bold')
-    ax.legend()
+    ax.legend(facecolor=AX_COLOR, labelcolor=TEXT_COLOR, edgecolor='#444444')
     plt.tight_layout()
     return fig
